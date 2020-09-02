@@ -111,46 +111,56 @@ const replaceAll = (str, mapObj) => {
     });
 }
 
-const main = async () => {
-    const CaseLocationData = await fetchGoogleSheet({
-        publishedURL: PUBLISHED_SPREADSHEET_WARS_CASES_LOCATION_URL,
-        skipFirstLine: true
-    })
-
-    // console.log(CaseLocation[0])
-    const govLocationData = await fetchDataGovHK({
-        url: DATA_GOV_HK_BUILDING_LIST,
-        fieldMapping: {
-            '地區': 'district_zh',
-            'District': 'district_en',
-            '大廈名單': 'location_zh',
-            'Building name': 'location_en',
-            '最後個案居住日期': 'date_zh',
-            'Last date of residence of the case(s)': 'date_en',
-            '相關疑似/確診個案': 'cases',
-            'Related probable/confirmed cases': 'cases'
+module.exports = {
+    checkMissingGovLocation: async () => {
+        try {
+            const CaseLocationData = await fetchGoogleSheet({
+                publishedURL: PUBLISHED_SPREADSHEET_WARS_CASES_LOCATION_URL,
+                skipFirstLine: true
+            })
+        
+            // console.log(CaseLocation[0])
+            const govLocationData = await fetchDataGovHK({
+                url: DATA_GOV_HK_BUILDING_LIST,
+                fieldMapping: {
+                    '地區': 'district_zh',
+                    'District': 'district_en',
+                    '大廈名單': 'location_zh',
+                    'Building name': 'location_en',
+                    '最後個案居住日期': 'date_zh',
+                    'Last date of residence of the case(s)': 'date_en',
+                    '相關疑似/確診個案': 'cases',
+                    'Related probable/confirmed cases': 'cases'
+                }
+            })
+        
+            const processedGovLocationData = groupByCase(govLocationData)//.slice(-20))
+        
+            const result = processedGovLocationData.map(govDat => {
+                const matched = CaseLocationData.find(caseDat => checkMatch(caseDat, govDat))
+                if (!!matched) {
+                    return
+                }
+                else {
+                    return govDat
+                }
+            })
+            const notMatchArray = result.filter(c => !!c)
+        
+            // for (const [i, notMatch] of notMatchArray.entries()) {
+            //     console.log(`${notMatch.case} ${notMatch.location_zh || notMatch.location_en}`)
+            // }
+        
+            // console.log(`total: ${CaseLocationData.length} || unmatched: ${notMatchArray.length}`)
+            return {
+                CaseLocationData,
+                notMatchArray
+            }
+        } catch (error) {
+            return {
+                error: error.stack
+            }
         }
-    })
-
-    const processedGovLocationData = groupByCase(govLocationData)//.slice(-20))
-
-    const result = processedGovLocationData.map(govDat => {
-        const matched = CaseLocationData.find(caseDat => checkMatch(caseDat, govDat))
-        if (!!matched) {
-            return
-        }
-        else {
-            return govDat
-        }
-    })
-    const notMatchArray = result.filter(c => !!c)
-
-    for (const [i, notMatch] of notMatchArray.entries()) {
-        console.log(`${notMatch.case} ${notMatch.location_zh || notMatch.location_en}`)
     }
-
-    console.log(`total: ${CaseLocationData.length} || unmatched: ${notMatchArray.length}`)
-    return notMatchArray
 }
 
-main()
