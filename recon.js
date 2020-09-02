@@ -157,6 +157,7 @@ module.exports = {
                 notMatchArray
             }
         } catch (error) {
+            console.error(error.stack)
             return {
                 error: error.stack
             }
