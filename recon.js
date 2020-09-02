@@ -96,7 +96,7 @@ const checkMatch = (caseDat, govDat) => {
         caseLocationText = caseLocationText.replace(/\s/g,'')
         govLocationText = govLocationText.replace(/\s/g,'')
     }
-    return caseLocationText === govLocationText
+    return caseLocationText.localeCompare(govLocationText) === 0
 }
 
 
