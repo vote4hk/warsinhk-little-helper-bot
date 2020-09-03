@@ -1,4 +1,7 @@
 const Telegraf = require("telegraf");
+const Markup = require("telegraf/markup");
+const Extra = require("telegraf/extra");
+
 const recon = require("./recon");
 require("dotenv").config();
 
@@ -11,12 +14,20 @@ bot.use(async (ctx, next) => {
   console.log("Response time: %sms", ms);
 });
 
-bot.start((ctx) =>
+bot.start((ctx) => {
   ctx.reply(
-    "歡迎使用 wars.vote4.hk 🤒武漢肺炎民間資訊😷小幫手，利申第一次寫Telegram Bot，請多多包涵🙇‍♂️\n請輸入 /check_gov 開始"
-  )
-);
-bot.hears("/check_gov", async (ctx) => {
+    "<b>歡迎使用 wars.vote4.hk 🤒武漢肺炎民間資訊😷小幫手</b>\n利申第一次寫Telegram Bot，請多多包涵🙇‍♂️",
+    Extra.HTML().markup(
+      Markup.inlineKeyboard([
+        Markup.callbackButton(
+          "比較我哋同CHP",
+          "check_missing_location_from_chp"
+        ),
+      ])
+    )
+  );
+});
+bot.action("check_missing_location_from_chp", async (ctx) => {
   try {
     ctx.reply(
       `等朕check下我哋同CHP過往14日地址有咩分別先......(咩都唔好撳，等1-2分鐘先)\n`
