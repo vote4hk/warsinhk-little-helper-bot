@@ -19,7 +19,8 @@ const renameKeys = (keysMap, obj) =>
     );
 
 const groupByCase = arr => {
-    return arr.reduce((acc, cur) => {
+    const uniqueCaseArray = new Set()
+    const processedGovLocationData = arr.reduce((acc, cur) => {
         return [...acc,
         ...cur.cases.split(",")
             .map(c => {
@@ -29,6 +30,7 @@ const groupByCase = arr => {
                 }
 
                 delete obj.cases
+                uniqueCaseArray.add(obj.case)
                 return obj
             })
         ]
@@ -36,6 +38,9 @@ const groupByCase = arr => {
         if (a.case > b.case) return 1
         if (a.case < b.case) return -1
     })
+    return {
+        processedGovLocationData, uniqueCaseArray
+}
 }
 
 
@@ -83,9 +88,6 @@ const mapObj = {
     "９": "9",
     "０": "0",
     ",": "",
-    "Ａ": "A",
-    "Ｂ": "B",
-    "Ｃ": "C",
 }
 
 const checkMatch = (caseDat, govDat) => {
@@ -95,8 +97,10 @@ const checkMatch = (caseDat, govDat) => {
     if (language === 'zh') {
         caseLocationText = caseLocationText.replace(/\s/g,'')
         govLocationText = govLocationText.replace(/\s/g,'')
+        return caseLocationText.localeCompare(govLocationText) === 0
     }
-    return caseLocationText.localeCompare(govLocationText) === 0
+    return caseLocationText.localeCompare(govLocationText, 'en', { sensitivity: 'base' }) === 0
+    
 }
 
 
@@ -134,10 +138,11 @@ module.exports = {
                 }
             })
         
-            const processedGovLocationData = groupByCase(govLocationData)//.slice(-20))
+            const { processedGovLocationData, uniqueCaseArray } = groupByCase(govLocationData)
         
+            const CaseLocationDataWarsAndGov = CaseLocationData.filter(dat => uniqueCaseArray.has(+dat.case_no))
             const result = processedGovLocationData.map(govDat => {
-                const matched = CaseLocationData.find(caseDat => checkMatch(caseDat, govDat))
+                const matched = CaseLocationDataWarsAndGov.find(caseDat => checkMatch(caseDat, govDat))
                 if (!!matched) {
                     return
                 }
