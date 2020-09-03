@@ -13,5 +13,18 @@
     "dotenv": "^8.2.0",
     "node-fetch": "^2.6.0",
     "telegraf": "^3.38.0"
+  },
+  "devDependencies": {
+    "husky": ">=4",
+    "lint-staged": ">=10",
+    "prettier": "2.1.1"
+  },
+  "husky": {
+    "hooks": {
+      "pre-commit": "lint-staged"
+    }
+  },
+  "lint-staged": {
+    "*.{js,css,md}": "prettier --write"
   }
 }
