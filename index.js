@@ -16,14 +16,8 @@ const showWelcomeMessage = (ctx, onStart = false) => {
     onStartMessage,
     Extra.HTML().markup(
       Markup.inlineKeyboard([
-        Markup.callbackButton(
-          "入 Case No 揾行蹤",
-          "check_case_location_by_case_no"
-        ),
-        Markup.callbackButton(
-          "比較我哋同CHP",
-          "check_missing_location_from_chp"
-        ),
+        Markup.callbackButton("入 Case No 揾行蹤", "checkCaseLocation"),
+        Markup.callbackButton("比較我哋同CHP", "compareCHPandWARS"),
       ])
     )
   );
@@ -39,7 +33,7 @@ bot.use(async (ctx, next) => {
   console.log("Response time: %sms", ms);
 });
 
-bot.action("check_case_location_by_case_no", async (ctx) => {
+bot.action("checkCaseLocation", async (ctx) => {
   try {
     ctx.reply(`請打Case No（只限數字...）\n`);
 
@@ -83,7 +77,7 @@ bot.action("check_case_location_by_case_no", async (ctx) => {
   }
 });
 
-bot.action("check_missing_location_from_chp", async (ctx) => {
+bot.action("compareCHPandWARS", async (ctx) => {
   try {
     ctx.reply(
       `等朕check下我哋同CHP過往14日地址有咩分別先......(咩都唔好撳，等1-2分鐘先)\n`
