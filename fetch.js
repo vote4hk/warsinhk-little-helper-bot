@@ -8,7 +8,7 @@ exports.fetchGoogleSheet = async ({
   alwaysEnabled = false,
   subtype = null,
 }) => {
-  console.log(`start fetching google sheet --- start`);
+  console.log(`fetch google sheet --- start`);
   const result = await fetch(
     `${publishedURL}&single=true&output=csv&headers=0${
       skipFirstLine ? "&range=A2:ZZ" : ""
@@ -16,15 +16,15 @@ exports.fetchGoogleSheet = async ({
   );
   const data = await result.text();
   const records = await csv2json().fromString(data);
-  console.log(`start fetching google sheet --- done`);
+  console.log(`fetch google sheet ----- end`);
   return records.filter((r) => alwaysEnabled || r.enabled === "Y");
 };
 
 exports.fetchDataGovHK = async ({ url, fieldMapping }) => {
-  console.log(`start fetching gov data --- start`);
+  console.log(`fetch gov data --- start`);
   const response = await Promise.all(
     ["chi", "eng"].map((lang) => fetch(url(lang)).then((res) => res.json()))
   );
-  console.log(`start fetching gov data --- done`);
+  console.log(`fetch gov data ----- end`);
   return response.flat().map((obj) => renameKeys(fieldMapping, obj));
 };
