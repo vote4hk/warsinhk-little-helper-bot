@@ -93,7 +93,6 @@ bot.action("compareCHPandWARS", async (ctx) => {
       return showWelcomeMessage(ctx);
     }
 
-    ctx.reply(`以下可能係政府有我哋無，亦可能係False Alarm，例如佢哋串錯字\n`);
     let unMatchText = "Case No 政府地址\n";
     for (const [i, notMatch] of notMatchArray.entries()) {
       unMatchText += `${notMatch.case} ${
@@ -101,7 +100,7 @@ bot.action("compareCHPandWARS", async (ctx) => {
       }\n`;
     }
     ctx.reply(
-      `${unMatchText}我哋有幾多地址: ${CaseLocationData.length} || 有幾多唔中: ${notMatchArray.length}`
+      `以下可能係政府有我哋無，亦可能係False Alarm🚨，例如佢哋串錯字🙄\n${unMatchText}我哋有幾多地址: ${CaseLocationData.length} || 有幾多唔中: ${notMatchArray.length}`
     );
     return showWelcomeMessage(ctx);
   } catch (error) {
