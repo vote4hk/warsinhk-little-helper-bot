@@ -1,6 +1,5 @@
-const fetch = require("node-fetch");
-const csv2json = require("csvtojson");
-const isDebug = process.env.DEBUG_MODE === "true";
+const { fetchGoogleSheet, fetchDataGovHK } = require("./fetch");
+const { CHARACTER_MAPPING } = require("./const");
 
 const PUBLISHED_SPREADSHEET_WARS_CASES_LOCATION_URL =
   "https://docs.google.com/spreadsheets/d/e/2PACX-1vT6aoKk3iHmotqb5_iHggKc_3uAA901xVzwsllmNoOpGgRZ8VAA3TSxK6XreKzg_AUQXIkVX5rqb0Mo/pub?gid=0";
@@ -8,15 +7,6 @@ const PUBLISHED_SPREADSHEET_WARS_CASES_URL =
   "https://docs.google.com/spreadsheets/d/e/2PACX-1vSr2xYotDgnAq6bqm5Nkjq9voHBKzKNWH2zvTRx5LU0jnpccWykvEF8iB_0g7Tzo2pwzkTuM3ETlr_h/pub?gid=0";
 const DATA_GOV_HK_BUILDING_LIST = (lang) =>
   `https://api.data.gov.hk/v2/filter?q=%7B%22resource%22%3A%22http%3A%2F%2Fwww.chp.gov.hk%2Ffiles%2Fmisc%2Fbuilding_list_${lang}.csv%22%2C%22section%22%3A1%2C%22format%22%3A%22json%22%7D`;
-
-const renameKeys = (keysMap, obj) =>
-  Object.keys(obj).reduce(
-    (acc, key) => ({
-      ...acc,
-      ...{ [keysMap[key] || key]: obj[key] },
-    }),
-    {}
-  );
 
 const groupByCase = (arr) => {
   const uniqueCaseArray = new Set();
@@ -46,82 +36,18 @@ const groupByCase = (arr) => {
   };
 };
 
-const fetchGoogleSheet = async ({
-  publishedURL,
-  skipFirstLine = false,
-  alwaysEnabled = false,
-  subtype = null,
-}) => {
-  console.log(`start fetching google sheet --- start`);
-  const result = await fetch(
-    `${publishedURL}&single=true&output=csv&headers=0${
-      skipFirstLine ? "&range=A2:ZZ" : ""
-    }&q=${Math.floor(new Date().getTime(), 1000)}`
-  );
-  const data = await result.text();
-  const records = await csv2json().fromString(data);
-  console.log(`start fetching google sheet --- done`);
-  return records.filter(
-    (r) => alwaysEnabled || (isDebug && r.enabled === "N") || r.enabled === "Y"
-  );
-};
-
-const fetchDataGovHK = async ({ url, fieldMapping }) => {
-  console.log(`start fetching gov data --- start`);
-  const response = await Promise.all(
-    ["chi", "eng"].map((lang) => fetch(url(lang)).then((res) => res.json()))
-  );
-  console.log(`start fetching gov data --- done`);
-  return response.flat().map((obj) => renameKeys(fieldMapping, obj));
-};
-
-const mapObj = {
-  "１": "1",
-  "２": "2",
-  "３": "3",
-  "４": "4",
-  "５": "5",
-  "６": "6",
-  "７": "7",
-  "８": "8",
-  "９": "9",
-  "０": "0",
-  Ａ: "A",
-  Ｂ: "B",
-  Ｃ: "C",
-  Ｄ: "D",
-  Ｅ: "E",
-  Ｆ: "F",
-  Ｇ: "G",
-  Ｈ: "H",
-  Ｉ: "I",
-  Ｊ: "J",
-  Ｋ: "K",
-  Ｌ: "L",
-  Ｍ: "M",
-  Ｎ: "N",
-  Ｏ: "O",
-  Ｐ: "P",
-  Ｑ: "Q",
-  Ｒ: "R",
-  Ｓ: "S",
-  Ｔ: "T",
-  Ｕ: "U",
-  Ｖ: "V",
-  Ｗ: "W",
-  Ｘ: "X",
-  Ｙ: "Y",
-  Ｚ: "Z",
-  ",": "",
-  "'": "",
-};
-
 const checkMatch = (caseDat, govDat) => {
   const language = (govDat.location_zh && "zh") || "en";
-  let caseLocationText = replaceAll(caseDat[`location_${language}`], mapObj)
+  let caseLocationText = replaceAll(
+    caseDat[`location_${language}`],
+    CHARACTER_MAPPING
+  )
     .trim()
     .toLowerCase();
-  let govLocationText = replaceAll(govDat[`location_${language}`], mapObj)
+  let govLocationText = replaceAll(
+    govDat[`location_${language}`],
+    CHARACTER_MAPPING
+  )
     .trim()
     .toLowerCase();
   if (language === "zh") {
