@@ -8,9 +8,12 @@ require("dotenv").config();
 
 const bot = new Telegraf(process.env.BOT_TOKEN);
 
-const showWelcomeMessage = (ctx) => {
+const showWelcomeMessage = (ctx, onStart = false) => {
+  const onStartMessage = onStart
+    ? "<b>歡迎使用 wars.vote4.hk \n🤒武漢肺炎民間資訊😷小幫手🕵️‍♀️</b>\n利申第一次寫Telegram Bot，請高抬貴手🙇‍♂️"
+    : "有咩幫到你🕵️‍♀️？";
   return ctx.reply(
-    "<b>歡迎使用 wars.vote4.hk \n🤒武漢肺炎民間資訊😷小幫手🕵️‍♀️</b>\n利申第一次寫Telegram Bot，請高抬貴手🙇‍♂️",
+    onStartMessage,
     Extra.HTML().markup(
       Markup.inlineKeyboard([
         Markup.callbackButton(
@@ -26,7 +29,7 @@ const showWelcomeMessage = (ctx) => {
   );
 };
 bot.start((ctx) => {
-  showWelcomeMessage(ctx);
+  showWelcomeMessage(ctx, true);
 });
 
 bot.use(async (ctx, next) => {
@@ -43,7 +46,8 @@ bot.action("check_case_location_by_case_no", async (ctx) => {
     bot.on("text", async (ctx) => {
       const query = +ctx.message.text;
       if (!Number.isInteger(query)) {
-        return ctx.reply(`🔢淨係可以打Number`);
+        ctx.reply(`🔢淨係可以打Number`);
+        return showWelcomeMessage(ctx);
       }
 
       ctx.reply(`🕵️‍♀️幫緊你～幫緊你～💦`);
@@ -51,11 +55,13 @@ bot.action("check_case_location_by_case_no", async (ctx) => {
       const { locations, error } = await checkCaseLocationByCaseNo(query);
 
       if (error) {
-        return ctx.reply(`中伏，有bug!`);
+        ctx.reply(`中伏，有bug!`);
+        return showWelcomeMessage(ctx);
       }
 
       if (!locations.length) {
-        return ctx.reply(`咩都揾唔到😩`);
+        ctx.reply(`咩都揾唔到😩`);
+        return showWelcomeMessage(ctx);
       }
 
       let locationText = "";
@@ -65,13 +71,15 @@ bot.action("check_case_location_by_case_no", async (ctx) => {
         } | ${location.sub_district_zh} | ${location.location_zh}\n`;
       }
 
-      return ctx.reply(
+      ctx.reply(
         `個案編號：${locations[0].case_no}\n最後出現     | 行蹤 | 地區 | 地點\n${locationText}`
       );
+      return showWelcomeMessage(ctx);
     });
   } catch (error) {
     ctx.reply(`中伏，有bug!`);
-    return console.error(error.stack);
+    console.error(error.stack);
+    return showWelcomeMessage(ctx);
   }
 });
 
@@ -87,7 +95,8 @@ bot.action("check_missing_location_from_chp", async (ctx) => {
     } = await recon.checkMissingGovLocation();
 
     if (error) {
-      return ctx.reply(`中伏，有bug!`);
+      ctx.reply(`中伏，有bug!`);
+      return showWelcomeMessage(ctx);
     }
 
     ctx.reply(`以下可能係政府有我哋無，亦可能係False Alarm，例如佢哋串錯字\n`);
@@ -97,13 +106,14 @@ bot.action("check_missing_location_from_chp", async (ctx) => {
         notMatch.location_zh || notMatch.location_en
       }\n`;
     }
-    ctx.reply(unMatchText);
     ctx.reply(
-      `我哋有幾多地址: ${CaseLocationData.length} || 有幾多唔中: ${notMatchArray.length}`
+      `${unMatchText}我哋有幾多地址: ${CaseLocationData.length} || 有幾多唔中: ${notMatchArray.length}`
     );
+    return showWelcomeMessage(ctx);
   } catch (error) {
     ctx.reply(`中伏，有bug!`);
-    return console.error(error.stack);
+    console.error(error.stack);
+    return showWelcomeMessage(ctx);
   }
 });
 
