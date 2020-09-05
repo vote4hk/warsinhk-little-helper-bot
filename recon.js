@@ -100,13 +100,8 @@ const checkMatch = (caseDat, govDat) => {
   if (language === "zh") {
     caseLocationText = caseLocationText.replace(/\s/g, "");
     govLocationText = govLocationText.replace(/\s/g, "");
-    return caseLocationText.localeCompare(govLocationText) === 0;
   }
-  return (
-    caseLocationText.localeCompare(govLocationText, "en", {
-      sensitivity: "base",
-    }) === 0
-  );
+  return caseLocationText.localeCompare(govLocationText) === 0;
 };
 
 const replaceAll = (str, mapObj) => {
